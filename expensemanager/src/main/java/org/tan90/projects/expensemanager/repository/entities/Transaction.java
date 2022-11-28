@@ -37,6 +37,9 @@ public class Transaction {
 	@Enumerated(EnumType.STRING)
 	private TransactionType type;
 	
+	@Column(name="current_balance", nullable=false, unique=false)
+	private double currentBalance;
+	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="category_id", nullable=false)
 	private TransactionCategory category;
