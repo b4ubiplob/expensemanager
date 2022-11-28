@@ -118,5 +118,13 @@ public class Transaction {
 				+ transactionDate + ", source=" + source + ", type=" + type + ", category=" + category + ", item="
 				+ item + "]";
 	}
+
+	public double getCurrentBalance() {
+		return currentBalance;
+	}
+
+	public void setCurrentBalance(double currentBalance) {
+		this.currentBalance = currentBalance;
+	}
 	
 }
