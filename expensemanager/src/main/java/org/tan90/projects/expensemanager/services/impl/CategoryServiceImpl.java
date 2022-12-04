@@ -5,7 +5,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
+import org.tan90.projects.expensemanager.exceptions.ErrorMessageConstants;
+import org.tan90.projects.expensemanager.exceptions.ResourceNotFoundException;
 import org.tan90.projects.expensemanager.model.CategoryTO;
 import org.tan90.projects.expensemanager.repository.TransactionCategoryRepository;
 import org.tan90.projects.expensemanager.repository.entities.TransactionCategory;
@@ -31,26 +34,26 @@ public class CategoryServiceImpl implements CategoryService{
 		categoryTO.setName(transactionCategory.getName());
 		return categoryTO;
 	}
-	
-	private TransactionCategory getTransactionCategory(CategoryTO categoryTO) {
-		TransactionCategory transactionCategory  = new TransactionCategory();
-		transactionCategory.setId(categoryTO.getId());
-		transactionCategory.setName(categoryTO.getName());
-		return transactionCategory;
-	}
 
 	@Override
-	public CategoryTO getCategory(long id) {
+	public CategoryTO getCategory(long id) throws ResourceNotFoundException{
 		Optional<TransactionCategory> category = categoryRepository.findById(id);
 		if (category.isPresent()) {
 			return getCategoryTO(category.get());
 		}
-		throw new IllegalArgumentException("Category not found");
+		throw new ResourceNotFoundException(ErrorMessageConstants.CATEGORY_NOT_FOUND);
 	}
 
 	@Override
-	public CategoryTO getCatgoryByName(String name) {
-		return null;
+	public CategoryTO getCatgoryByName(String name) throws ResourceNotFoundException{
+		TransactionCategory probe = new TransactionCategory();
+		probe.setName(name);
+		Example<TransactionCategory> example = Example.of(probe);
+		Optional<TransactionCategory> optional = categoryRepository.findOne(example);
+		if (optional.isPresent()) {
+			return getCategoryTO(optional.get());
+		}
+		throw new ResourceNotFoundException(ErrorMessageConstants.CATEGORY_NOT_FOUND);
 	}
 
 	@Override
@@ -64,8 +67,16 @@ public class CategoryServiceImpl implements CategoryService{
 	}
 
 	@Override
-	public void updateCategory(CategoryTO category) {
-		categoryRepository.save(getTransactionCategory(category));
+	public void updateCategory(CategoryTO category) throws ResourceNotFoundException {
+		Optional<TransactionCategory> optional = categoryRepository.findById(category.getId());
+		if (optional.isPresent()) {
+			TransactionCategory transactionCategory = optional.get();
+			transactionCategory.setName(category.getName());
+			categoryRepository.save(transactionCategory);
+		}
+		else {
+			throw new ResourceNotFoundException(ErrorMessageConstants.CATEGORY_NOT_FOUND);
+		}
 		
 	}
 
