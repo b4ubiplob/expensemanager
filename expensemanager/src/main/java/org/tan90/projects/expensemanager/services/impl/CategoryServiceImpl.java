@@ -1,5 +1,6 @@
 package org.tan90.projects.expensemanager.services.impl;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,23 +26,17 @@ public class CategoryServiceImpl implements CategoryService{
 		TransactionCategory transactionCategory = new TransactionCategory();
 		transactionCategory.setName(name);
 		TransactionCategory savedCategory = categoryRepository.save(transactionCategory);
-		return getCategoryTO(savedCategory);
-	}
-
-	private CategoryTO getCategoryTO(TransactionCategory transactionCategory) {
-		CategoryTO categoryTO = new CategoryTO();
-		categoryTO.setId(transactionCategory.getId());
-		categoryTO.setName(transactionCategory.getName());
-		return categoryTO;
+		return TOConversionUtil.getCategoryTO(savedCategory);
 	}
 
 	@Override
 	public CategoryTO getCategory(long id) throws ResourceNotFoundException{
 		Optional<TransactionCategory> category = categoryRepository.findById(id);
 		if (category.isPresent()) {
-			return getCategoryTO(category.get());
+			return TOConversionUtil.getCategoryTO(category.get());
 		}
-		throw new ResourceNotFoundException(ErrorMessageConstants.CATEGORY_NOT_FOUND);
+		throw new ResourceNotFoundException(MessageFormat.format(
+				ErrorMessageConstants.CATEGORY_NOT_FOUND, id));
 	}
 
 	@Override
@@ -51,9 +46,10 @@ public class CategoryServiceImpl implements CategoryService{
 		Example<TransactionCategory> example = Example.of(probe);
 		Optional<TransactionCategory> optional = categoryRepository.findOne(example);
 		if (optional.isPresent()) {
-			return getCategoryTO(optional.get());
+			return TOConversionUtil.getCategoryTO(optional.get());
 		}
-		throw new ResourceNotFoundException(ErrorMessageConstants.CATEGORY_NOT_FOUND);
+		throw new ResourceNotFoundException(MessageFormat.format(
+				ErrorMessageConstants.CATEGORY_NOT_FOUND_BY_NAME, name));
 	}
 
 	@Override
@@ -61,7 +57,7 @@ public class CategoryServiceImpl implements CategoryService{
 		List<TransactionCategory> transactionCategories = categoryRepository.findAll();
 		List<CategoryTO> categories = new ArrayList<>();
 		transactionCategories.stream().forEach(
-				(transactionCategory) -> categories.add(getCategoryTO(transactionCategory))
+				(transactionCategory) -> categories.add(TOConversionUtil.getCategoryTO(transactionCategory))
 			);
 		return categories;
 	}
@@ -75,7 +71,8 @@ public class CategoryServiceImpl implements CategoryService{
 			categoryRepository.save(transactionCategory);
 		}
 		else {
-			throw new ResourceNotFoundException(ErrorMessageConstants.CATEGORY_NOT_FOUND);
+			throw new ResourceNotFoundException(MessageFormat.format(
+					ErrorMessageConstants.CATEGORY_NOT_FOUND, category.getId()));
 		}
 		
 	}

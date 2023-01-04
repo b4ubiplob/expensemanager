@@ -1,5 +1,6 @@
 package org.tan90.projects.expensemanager.services.impl;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,21 +24,14 @@ public class TransactionItemServiceImpl implements TransactionItemService {
 		TransactionItem transactionItem = new TransactionItem();
 		transactionItem.setName(name);
 		TransactionItem savedItem = transactionItemRepository.save(transactionItem);
-		return getTransactionItemTO(savedItem);
+		return TOConversionUtil.getTransactionItemTO(savedItem);
 	}
 	
-	private TransactionItemTO getTransactionItemTO(TransactionItem transactionItem) {
-		TransactionItemTO transactionItemTO = new TransactionItemTO();
-		transactionItemTO.setId(transactionItem.getId());
-		transactionItemTO.setName(transactionItem.getName());
-		return transactionItemTO;
-	}
-
 	@Override
 	public List<TransactionItemTO> getAllTransactionItems() {
 		List<TransactionItemTO> transactionItemTOs = new ArrayList<>();
 		transactionItemRepository.findAll().stream().forEach(
-				(transactionItem) -> transactionItemTOs.add(getTransactionItemTO(transactionItem))
+				(transactionItem) -> transactionItemTOs.add(TOConversionUtil.getTransactionItemTO(transactionItem))
 			);
 		return transactionItemTOs;
 	}
@@ -46,9 +40,10 @@ public class TransactionItemServiceImpl implements TransactionItemService {
 	public TransactionItemTO getTransactionItem(long id) throws ResourceNotFoundException {
 		Optional<TransactionItem> optional = transactionItemRepository.findById(id);
 		if (optional.isPresent()) {
-			return getTransactionItemTO(optional.get());
+			return TOConversionUtil.getTransactionItemTO(optional.get());
 		}
-		throw new ResourceNotFoundException(ErrorMessageConstants.TRANSACTION_ITEM_NOT_FOUND);
+		throw new ResourceNotFoundException(MessageFormat.format(
+				ErrorMessageConstants.TRANSACTION_ITEM_NOT_FOUND, id));
 	}
 
 	@Override
@@ -58,9 +53,10 @@ public class TransactionItemServiceImpl implements TransactionItemService {
 		Example<TransactionItem> example = Example.of(probe);
 		Optional<TransactionItem> optional = transactionItemRepository.findOne(example);
 		if (optional.isPresent()) {
-			return getTransactionItemTO(optional.get());	
+			return TOConversionUtil.getTransactionItemTO(optional.get());	
 		}
-		throw new ResourceNotFoundException(ErrorMessageConstants.TRANSACTION_ITEM_NOT_FOUND);
+		throw new ResourceNotFoundException(MessageFormat.format(
+				ErrorMessageConstants.TRANSACTION_ITEM_NOT_FOUND_BY_NAME, name));
 	}
 
 	@Override
@@ -72,7 +68,8 @@ public class TransactionItemServiceImpl implements TransactionItemService {
 			transactionItemRepository.save(transactionItem);
 		}
 		else {
-			throw new ResourceNotFoundException(ErrorMessageConstants.TRANSACTION_ITEM_NOT_FOUND);
+			throw new ResourceNotFoundException(MessageFormat.format(
+					ErrorMessageConstants.TRANSACTION_ITEM_NOT_FOUND, transactionItemTO.getId()));
 		}
 		
 	}
